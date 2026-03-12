@@ -12,7 +12,7 @@ faq_df = pd.read_csv(dtst_path)
 questions = faq_df["question"].tolist()
 answers = faq_df["answer"].tolist()
 
-# Build TF-IDF vectorizer
+# Build TF-IDF vectorizer - This is a traditional keyword retrieval
 vectorizer = TfidfVectorizer(stop_words="english")
 tfidf_matrix = vectorizer.fit_transform(questions)
 
