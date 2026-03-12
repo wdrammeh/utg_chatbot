@@ -5,8 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
 # Load dataset
-dtst_path = "dataset/faq_dataset.csv"
-test_dtst_path = "dataset/test_questions.csv"
+dtst_path = "dataset/dataset.csv"
+test_dtst_path = "dataset/dataset-test-par.csv"
 
 faq_df = pd.read_csv(dtst_path)
 
@@ -33,7 +33,7 @@ def retrieve_ans(query):
     return questions[best_idx], answers[best_idx], similarities[0][best_idx]
 
 
-def eval_ser():
+def cb_eval():
     faq_df = pd.read_csv(dtst_path)
     test_df = pd.read_csv(test_dtst_path)
 
@@ -58,7 +58,37 @@ def eval_ser():
             correct += 1
 
     accuracy = correct / total
-    print("Sentence Embedding Retrieval Accuracy:", accuracy)
+    print("Sentence Embedding Category-Based Retrieval Accuracy:", accuracy)
+
+
+def exact_eval():
+    faq_df = pd.read_csv(dtst_path)
+    test_df = pd.read_csv(test_dtst_path)
+
+    faq_questions = faq_df["question"].tolist()
+    faq_answers = faq_df["answer"].tolist()
+
+    test_questions = test_df["question"].tolist()
+    test_answers = test_df["answer"].tolist()
+
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+    faq_embeddings = model.encode(faq_questions)
+
+    correct_embed = 0
+
+    for q, true_ans in zip(test_questions, test_answers):
+        q_embed = model.encode([q])
+
+        sims = cosine_similarity(q_embed, faq_embeddings)
+
+        best_idx = sims.argmax()
+        predicted_ans = faq_answers[best_idx]
+
+        if predicted_ans == true_ans:
+            correct_embed += 1
+
+    embedding_accuracy = correct_embed / len(test_questions)
+    print(f"Sentence Embedding Exact Answer Retrieval Accuracy: {embedding_accuracy}")
 
 
 # Interactive test
@@ -77,5 +107,5 @@ def int_test():
 
 
 if __name__ == "__main__":
-    # eval_ser()
-    int_test()
+    cb_eval()
+    # int_test()

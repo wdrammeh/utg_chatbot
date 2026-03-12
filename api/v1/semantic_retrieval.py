@@ -7,7 +7,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-faq_df = pd.read_csv("dataset/faq_dataset.csv")
+faq_df = pd.read_csv("dataset/dataset.csv")
 
 questions = faq_df["question"].tolist()
 answers = faq_df["answer"].tolist()

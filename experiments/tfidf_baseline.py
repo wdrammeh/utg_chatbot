@@ -4,8 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Load dataset
-dtst_path = "dataset/faq_dataset.csv"
-test_dtst_path = "dataset/test_questions.csv"
+dtst_path = "dataset/dataset.csv"
+test_dtst_path = "dataset/dataset-test-par.csv"
 
 faq_df = pd.read_csv(dtst_path)
 
@@ -30,7 +30,7 @@ def retrieve_ans(query):
     return questions[best_idx], answers[best_idx], similarity[0][best_idx]
 
 
-def eval_tfidf():
+def cb_eval():
     faq_df = pd.read_csv(dtst_path)
     test_df = pd.read_csv(test_dtst_path)
 
@@ -52,7 +52,36 @@ def eval_tfidf():
             correct += 1
 
     accuracy = correct / total
-    print("TF-IDF Retrieval Accuracy:", accuracy)
+    print("TF-IDF Category-Based Retrieval Accuracy:", accuracy)
+
+
+def exact_eval():
+    faq_df = pd.read_csv(dtst_path)
+    test_df = pd.read_csv(test_dtst_path)
+
+    faq_questions = faq_df["question"].tolist()
+    faq_answers = faq_df["answer"].tolist()
+
+    test_questions = test_df["question"].tolist()
+    test_answers = test_df["answer"].tolist()
+
+    vectorizer = TfidfVectorizer()
+    faq_tfidf = vectorizer.fit_transform(faq_questions)
+
+    correct_tfidf = 0
+
+    for q, true_ans in zip(test_questions, test_answers):
+        q_vec = vectorizer.transform([q])
+
+        sims = cosine_similarity(q_vec, faq_tfidf)
+        best_idx = sims.argmax()
+        predicted_ans = faq_answers[best_idx]
+
+        if predicted_ans == true_ans:
+            correct_tfidf += 1
+
+    tfidf_accuracy = correct_tfidf / len(test_questions)
+    print(f"TF-IDF Exact Answer Retrieval Accuracy: {tfidf_accuracy}") # {tfidf_accuracy:.2f}
 
 
 def int_test():
@@ -69,5 +98,6 @@ def int_test():
 
 
 if __name__ == "__main__":
-    # eval_tfidf()
-    int_test()
+    cb_eval()
+    exact_eval()
+    # int_test()
