@@ -1,12 +1,19 @@
 import pandas as pd
 import numpy as np
+import random
+import torch
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 
+# Set random seeds for reproducibility
+random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
+
 # Load dataset
 dtst_path = "dataset/dataset.csv"
-test_dtst_path = "dataset/dataset-test-par.csv"
+test_dtst_path = "dataset/testset.csv"
 
 faq_df = pd.read_csv(dtst_path)
 
@@ -108,4 +115,5 @@ def int_test():
 
 if __name__ == "__main__":
     cb_eval()
+    exact_eval()
     # int_test()

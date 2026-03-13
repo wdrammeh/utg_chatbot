@@ -12,24 +12,22 @@
 
 | # | Category | No. of Questions |
 | - | - | - |
-| 1 | General | 218 |
-| 2 | Admission | 199 |
-| 3 | Academics | 198 |
-| 4 | Fees | 120 |
-| 5 | Facilities | 225 |
-| 6 | Programs | 130 |
-| 7 | Courses | 65 |
-| 8 | Registration | 110 |
-| 9 | Scholarships | 80 |
-| 10 | Graduation | 80 |
-| 11 | Schools | 20 |
-| 12 | Departments | 25 |
-| 13 | Locations | 30 |
+| 1 | General | 200 |
+| 2 | Admission | 180 |
+| 3 | Academics | 179 |
+| 4 | Fees | 101 |
+| 5 | Facilities | 210 |
+| 6 | Programs | 115 |
+| 7 | Courses | 50 |
+| 8 | Registration | 90 |
+| 9 | Scholarships | 60 |
+| 10 | Graduation | 65 |
+| 11 | Schools | 50 |
+| 12 | Departments | 50 |
+| 13 | Locations | 50 |
 
-**Total**: 1,500
+**Total**: 1,400
 
 ### Test Set
 
-The test set contains 195 questions. 15 from each category.
-
-There're two types of test sets: **Identical** and **Paraphrased**. We want to see which (retrieval) method performs better on which. We will eventually stick to the later regardless.
+The test set contains 195 questions.
