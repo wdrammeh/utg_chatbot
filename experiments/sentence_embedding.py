@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import random
 import torch
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
 
 # Set random seeds for reproducibility
 random.seed(42)
@@ -21,22 +21,23 @@ questions = faq_df["question"].tolist()
 answers = faq_df["answer"].tolist()
 categories = faq_df["category"].tolist()
 
-# Build TF-IDF vectorizer
-vectorizer = TfidfVectorizer(stop_words="english")
-tfidf_matrix = vectorizer.fit_transform(questions)
+# Load model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+faq_embeddings = model.encode(questions, convert_to_numpy=True)
 
 
-# Retrieval function (returns ranked indices)
-def tfidf_retrieve(query, top_k=5):
-    query_vec = vectorizer.transform([query])
-    similarity = cosine_similarity(query_vec, tfidf_matrix)[0]
+# Retrieval
+def embed_retrieve(query, top_k=5):
+    query_embedding = model.encode([query], convert_to_numpy=True)
 
-    ranked_indices = similarity.argsort()[::-1]  # descending order
+    similarities = cosine_similarity(query_embedding, faq_embeddings)[0]
+    ranked_indices = similarities.argsort()[::-1]
+
     return ranked_indices[:top_k]
 
 
 # Category Accuracy
-def tfidf_eval_category():
+def embed_eval_category():
     correct = 0
     total = len(test_df)
 
@@ -44,18 +45,18 @@ def tfidf_eval_category():
         q = row["question"]
         true_category = row["category"]
 
-        top_idx = tfidf_retrieve(q, top_k=1)[0]
+        top_idx = embed_retrieve(q, top_k=1)[0]
         predicted_category = categories[top_idx]
 
         if predicted_category == true_category:
             correct += 1
 
     accuracy = correct / total
-    print(f"TF-IDF Category Accuracy: {accuracy:.4f}")
+    print(f"Sentence Embedding Category Accuracy: {accuracy:.4f}")
 
 
-# Recall@1 (Top-1)
-def tfidf_eval_top1():
+# Recall@1
+def embed_eval_top1():
     correct = 0
     total = len(test_df)
 
@@ -63,18 +64,18 @@ def tfidf_eval_top1():
         q = row["question"]
         true_ans = row["answer"]
 
-        top_idx = tfidf_retrieve(q, top_k=1)[0]
+        top_idx = embed_retrieve(q, top_k=1)[0]
         predicted_ans = answers[top_idx]
 
         if predicted_ans == true_ans:
             correct += 1
 
     accuracy = correct / total
-    print(f"TF-IDF Recall@1 (Top-1 Accuracy): {accuracy:.4f}")
+    print(f"Sentence Embedding Recall@1: {accuracy:.4f}")
 
 
 # Recall@3
-def tfidf_eval_top3():
+def embed_eval_top3():
     correct = 0
     total = len(test_df)
 
@@ -82,18 +83,18 @@ def tfidf_eval_top3():
         q = row["question"]
         true_ans = row["answer"]
 
-        top_indices = tfidf_retrieve(q, top_k=3)
+        top_indices = embed_retrieve(q, top_k=3)
         predicted_answers = [answers[i] for i in top_indices]
 
         if true_ans in predicted_answers:
             correct += 1
 
     accuracy = correct / total
-    print(f"TF-IDF Recall@3: {accuracy:.4f}")
+    print(f"Sentence Embedding Recall@3: {accuracy:.4f}")
 
 
 # Recall@5
-def tfidf_eval_top5():
+def embed_eval_top5():
     correct = 0
     total = len(test_df)
 
@@ -101,18 +102,18 @@ def tfidf_eval_top5():
         q = row["question"]
         true_ans = row["answer"]
 
-        top_indices = tfidf_retrieve(q, top_k=5)
+        top_indices = embed_retrieve(q, top_k=5)
         predicted_answers = [answers[i] for i in top_indices]
 
         if true_ans in predicted_answers:
             correct += 1
 
     accuracy = correct / total
-    print(f"TF-IDF Recall@5: {accuracy:.4f}")
+    print(f"Sentence Embedding Recall@5: {accuracy:.4f}")
 
 
-# Mean Reciprocal Rank (MRR)
-def tfidf_eval_mrr():
+# MRR
+def embed_eval_mrr():
     total = len(test_df)
     reciprocal_ranks = []
 
@@ -120,17 +121,15 @@ def tfidf_eval_mrr():
         q = row["question"]
         true_ans = row["answer"]
 
-        # Get full ranking
-        query_vec = vectorizer.transform([q])
-        similarity = cosine_similarity(query_vec, tfidf_matrix)[0]
+        query_embedding = model.encode([q], convert_to_numpy=True)
+        similarities = cosine_similarity(query_embedding, faq_embeddings)[0]
 
-        ranked_indices = similarity.argsort()[::-1]
+        ranked_indices = similarities.argsort()[::-1]
 
-        # Find rank of correct answer
         rank = None
         for idx, i in enumerate(ranked_indices):
             if answers[i] == true_ans:
-                rank = idx + 1  # ranks start from 1
+                rank = idx + 1
                 break
 
         if rank is not None:
@@ -139,18 +138,18 @@ def tfidf_eval_mrr():
             reciprocal_ranks.append(0)
 
     mrr = sum(reciprocal_ranks) / total
-    print(f"TF-IDF MRR: {mrr:.4f}")
+    print(f"Sentence Embedding MRR: {mrr:.4f}")
 
 
 # Interactive test
 def int_test():
     while True:
-        user_input = input("\nAsk a question (or type q): ")
-        if user_input.lower() == "q":
+        query = input("\nAsk a question (or type q): ")
+        if query.lower() == "q":
             break
 
-        query_vec = vectorizer.transform([user_input])
-        similarities = cosine_similarity(query_vec, tfidf_matrix)[0]
+        query_embedding = model.encode([query], convert_to_numpy=True)
+        similarities = cosine_similarity(query_embedding, faq_embeddings)[0]
 
         best_idx = similarities.argmax()
 
@@ -160,9 +159,9 @@ def int_test():
 
 
 if __name__ == "__main__":
-    tfidf_eval_category()
-    tfidf_eval_top1()
-    tfidf_eval_top3()
-    tfidf_eval_top5()
-    tfidf_eval_mrr()
+    embed_eval_category()
+    embed_eval_top1()
+    embed_eval_top3()
+    embed_eval_top5()
+    embed_eval_mrr()
     # int_test()
