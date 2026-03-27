@@ -2,7 +2,7 @@
 
 This is the backend implementation of a research project.
 
-For more info., checkout the [colab notebook](#colab-notebook).
+For more info., checkout the [colab notebook](https://colab.research.google.com/drive/1L7Xw2zUz6vbENvunbpt0RAHI36m9ycYM?usp=sharing).
 
 ## Colab Notebook
 

@@ -4,3 +4,4 @@ numpy
 sentence-transformers
 flask
 flask-cors
+matplotlib
